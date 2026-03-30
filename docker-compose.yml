@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  rag-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-rag-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      # Mount vector DB for persistence
+      - ./data/chroma_db:/app/data/chroma_db:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+
+# Production deployment notes:
+# 1. Set ANTHROPIC_API_KEY in .env file
+# 2. Ensure data/chroma_db exists and is indexed
+# 3. Run: docker-compose up -d
+# 4. Monitor: docker-compose logs -f
+# 5. Scale: docker-compose up -d --scale rag-api=3
