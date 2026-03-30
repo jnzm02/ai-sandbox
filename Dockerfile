@@ -41,8 +41,9 @@ COPY --from=builder /root/.local /root/.local
 
 # Copy application code
 COPY src/ ./src/
-COPY data/ ./data/
-COPY .env .env
+
+# Create data directory structure (actual data mounted as volume in production)
+RUN mkdir -p data/chroma_db data/fastapi_repo
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

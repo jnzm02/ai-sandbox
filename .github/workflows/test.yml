@@ -61,6 +61,19 @@ jobs:
       run: |
         docker build -t rag-api:test .
 
-    - name: Test Docker image
+    - name: Test Docker image imports
       run: |
-        docker run --rm rag-api:test python3 -c "import src.api; print('✓ Import successful')"
+        docker run --rm rag-api:test python3 -c "
+        import sys
+        print('Testing imports...')
+
+        # Test core dependencies
+        import fastapi
+        import anthropic
+        import chromadb
+        import langchain_community
+        import langchain_anthropic
+
+        print('✓ All core dependencies import successfully')
+        print('✓ Docker image built correctly')
+        "

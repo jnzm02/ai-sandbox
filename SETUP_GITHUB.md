@@ -67,6 +67,7 @@ Check that these files are **NOT** in your GitHub repo (should be in .gitignore)
 - ❌ `.env` (contains API key!)
 - ❌ `data/fastapi_repo/` (large cloned repo)
 - ❌ `data/chroma_db/` (vector DB - users will regenerate)
+- ❌ `__pycache__/` (Python cache)
 
 Check that these files **ARE** in your repo:
 - ✅ `README.md`
@@ -76,6 +77,9 @@ Check that these files **ARE** in your repo:
 - ✅ `docker-compose.yml`
 - ✅ `requirements.txt`
 - ✅ `LICENSE`
+- ✅ `DEPLOYMENT.md`
+- ✅ `CONTRIBUTING.md`
+- ✅ `.github/workflows/test.yml`
 
 ### 5. Add GitHub Topics (Optional but Recommended)
 
