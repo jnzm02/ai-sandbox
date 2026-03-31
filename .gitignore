@@ -65,3 +65,13 @@ Thumbs.db
 *.pid
 *.seed
 *.pid.lock
+
+# Deployment (keep deploy/ scripts but ignore backups and server-specific files)
+backups/
+*.tar.gz
+*.backup
+
+# Keep these deployment templates tracked:
+# - .env.production (template)
+# - deploy/*.sh (deployment scripts)
+# - DEPLOYMENT_VPS.md (docs)
