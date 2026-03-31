@@ -75,3 +75,4 @@ backups/
 # - .env.production (template)
 # - deploy/*.sh (deployment scripts)
 # - DEPLOYMENT_VPS.md (docs)
+.server-config
