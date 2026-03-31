@@ -6,7 +6,7 @@ set -e
 # Usage: ./deploy.sh [--build] [--pull]
 
 APP_DIR="/opt/rag-api"
-DOCKER_IMAGE="your-dockerhub-username/rag-api:latest"
+DOCKER_IMAGE="ghcr.io/jnzm02/ai-sandbox:latest"
 CONTAINER_NAME="rag-api"
 
 # Parse arguments
