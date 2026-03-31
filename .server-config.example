@@ -1,0 +1,15 @@
+# Server Configuration Template
+# Copy this file to .server-config and add your server details
+
+SERVER_IP=your_server_ip_here
+SERVER_USER=root
+SERVER_PORT=22
+
+# Usage in scripts:
+# source .server-config
+# ssh $SERVER_USER@$SERVER_IP -p $SERVER_PORT
+
+# Example:
+# SERVER_IP=192.168.1.100
+# SERVER_USER=deploy
+# SERVER_PORT=22
