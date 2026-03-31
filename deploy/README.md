@@ -43,9 +43,58 @@ nano .env  # Add ANTHROPIC_API_KEY
 ./deploy/deploy.sh --pull
 ```
 
+### Updating Deployed Application
+
+After initial deployment, update from Git:
+
+```bash
+# On server
+ssh root@YOUR_SERVER_IP
+cd /opt/rag-api
+
+# Check for updates
+./deploy/update-from-git.sh --check
+
+# Pull and deploy updates
+./deploy/update-from-git.sh
+
+# Or pull and rebuild (if Dockerfile changed)
+./deploy/update-from-git.sh --build
+```
+
 ---
 
 ## Scripts Overview
+
+### update-from-git.sh
+**Purpose:** Update production application from GitHub
+**Run on:** Server (after initial deployment)
+**What it does:**
+- Fetches latest code from GitHub
+- Creates pre-update backup
+- Pulls changes and redeploys
+- Verifies health after update
+
+**Usage:**
+```bash
+# Check for updates only
+./deploy/update-from-git.sh --check
+
+# Pull and deploy (uses Docker Hub image)
+./deploy/update-from-git.sh
+
+# Pull and rebuild (for Dockerfile changes)
+./deploy/update-from-git.sh --build
+```
+
+**Prerequisites:**
+- Initial deployment completed
+- Git repository initialized on server
+- Network access to GitHub
+
+**Runtime:** ~2-5 minutes (pull), ~10-15 minutes (build)
+
+---
 
 ### server-setup.sh
 **Purpose:** One-time server initialization
