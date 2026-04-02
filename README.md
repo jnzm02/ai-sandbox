@@ -4,8 +4,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![Tests](https://github.com/jnzm02/ai-sandbox/actions/workflows/test.yml/badge.svg)](https://github.com/jnzm02/ai-sandbox/actions/workflows/test.yml)
+[![Docker Build](https://github.com/jnzm02/ai-sandbox/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/jnzm02/ai-sandbox/actions/workflows/docker-publish.yml)
+[![Production](https://img.shields.io/badge/status-deployed-success.svg)](https://github.com/jnzm02/ai-sandbox)
 
 Production-ready **Retrieval-Augmented Generation (RAG)** system for querying FastAPI documentation. Built to demonstrate AI systems engineering best practices: from prototype to production in one weekend.
+
+**🚀 Live Production Deployment** | [Deployment Guide](DEPLOYMENT_WORKFLOW.md) | [API Docs](#api-endpoints)
 
 **🎯 Perfect for:** Backend engineers learning AI/ML systems • RAG architecture reference • Interview portfolio projects
 
@@ -166,7 +171,7 @@ DELETE /sessions/{session_id}
 
 ## Docker Deployment
 
-### Build & Run
+### Local Development
 
 ```bash
 # Build image
@@ -182,21 +187,64 @@ docker-compose logs -f
 docker-compose down
 ```
 
-### Production Deployment
+### Production Deployment (VPS)
+
+This project includes **complete production deployment automation** with CI/CD, automated backups, and monitoring.
+
+**📚 Full Deployment Guide**: See [DEPLOYMENT_WORKFLOW.md](DEPLOYMENT_WORKFLOW.md)
+
+#### Quick Production Deploy
 
 ```bash
-# 1. Set environment variables
-echo "ANTHROPIC_API_KEY=your_key" > .env
+# 1. Prepare locally
+make deploy-init          # Initialize deployment files
+make ingest              # Create vector database
+make docker-build        # Build and test Docker image
 
-# 2. Ensure vector DB is indexed
-python3 src/ingest.py
-
-# 3. Deploy
-docker-compose up -d
-
-# 4. Scale horizontally (behind load balancer)
-docker-compose up -d --scale rag-api=3
+# 2. Deploy to server (automated)
+./deploy/quick-deploy.sh  # Interactive deployment wizard
 ```
+
+#### What's Included
+
+- ✅ **Automated CI/CD**: GitHub Actions → Docker builds → Container Registry
+- ✅ **Security Hardening**: Firewall, SSH, Fail2Ban, malware prevention
+- ✅ **Automated Backups**: Daily backups (2.8 GB), 14-day retention
+- ✅ **Git-based Updates**: Pull updates directly from GitHub
+- ✅ **Health Monitoring**: CPU, API, backup validation (every 5 min)
+- ✅ **Zero-Downtime Deploys**: Health checks, auto-restart
+- ✅ **Production Docs**: Comprehensive guides, checklists, troubleshooting
+
+#### Production Stack
+
+```
+GitHub Actions (CI/CD)
+       ↓
+GitHub Container Registry
+       ↓
+VPS Server (Ubuntu)
+  ├─ Docker (Containerization)
+  ├─ Nginx (Reverse proxy, rate limiting)
+  ├─ Fail2Ban (Intrusion prevention)
+  └─ Automated monitoring & backups
+```
+
+#### Update Production
+
+```bash
+# Local: Make changes
+git add .
+git commit -m "Your changes"
+git push origin main
+
+# Server: Pull and deploy
+ssh root@YOUR_SERVER_IP
+cd /opt/rag-api
+./deploy/update-from-git.sh
+```
+
+**Production Status**: ✅ Deployed and Operational
+**See**: [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) | [VPS Guide](DEPLOYMENT_VPS.md)
 
 ## Project Structure
 
