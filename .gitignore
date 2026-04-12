@@ -52,6 +52,11 @@ data/chroma_db/
 *.log
 logs/
 
+# Evaluation results (local experiment outputs)
+evaluation/results/*
+!evaluation/results/.gitkeep
+evaluation/__pycache__/
+
 # Testing
 .pytest_cache/
 .coverage
@@ -76,3 +81,4 @@ backups/
 # - deploy/*.sh (deployment scripts)
 # - DEPLOYMENT_VPS.md (docs)
 .server-config
+PRODUCTION_STATUS.md  # Server-specific status file with IPs

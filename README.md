@@ -244,7 +244,13 @@ cd /opt/rag-api
 ```
 
 **Production Status**: ✅ Deployed and Operational
-**See**: [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) | [VPS Guide](DEPLOYMENT_VPS.md)
+
+**Live URLs**:
+- **Landing Page**: https://aether-guard.com
+- **API Endpoint**: `api.aether-guard.com` (pending DNS configuration)
+- **API Documentation**: [API Usage Guide](API_USAGE_GUIDE.md)
+
+**See**: [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) | [VPS Guide](DEPLOYMENT_VPS.md) | [DNS Setup](DNS_SETUP_GUIDE.md)
 
 ## Project Structure
 

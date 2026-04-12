@@ -1,0 +1,6 @@
+# Evaluation Results Directory
+
+This directory stores baseline evaluation results from run_experiment.py
+
+Results are excluded from git to keep repo size small.
+To see example output, run: python3 evaluation/run_experiment.py

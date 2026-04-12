@@ -1,0 +1,249 @@
+"""
+Ground Truth Generation Script
+
+Generates a Golden Dataset of 30 Q&A pairs from FastAPI documentation.
+Each entry includes:
+- question: User question
+- expected_answer: Reference answer (can be bullet points)
+- source_file: Which doc file contains the answer
+- difficulty: easy/medium/hard (for analysis)
+
+Usage:
+    python evaluation/generate_ground_truth.py
+
+Output:
+    evaluation/golden_dataset.json
+"""
+
+import json
+from pathlib import Path
+from typing import List, Dict
+from anthropic import Anthropic
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Initialize Claude for question generation
+client = Anthropic()
+
+GOLDEN_QUESTIONS = [
+    # Easy - Single concept (20 questions)
+    {
+        "question": "How do I define path parameters in FastAPI?",
+        "expected_answer": "Use curly braces in the path and add them as function parameters, e.g., @app.get('/items/{item_id}') def read_item(item_id: int)",
+        "source_file": "tutorial/path-params.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is the purpose of the @app.get() decorator?",
+        "expected_answer": "It defines an HTTP GET endpoint. The path specified in @app.get('/path') becomes the URL route for that endpoint.",
+        "source_file": "tutorial/first-steps.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I enable CORS in FastAPI?",
+        "expected_answer": "Use CORSMiddleware from fastapi.middleware.cors and add it with app.add_middleware(). Configure allowed origins, methods, and headers.",
+        "source_file": "tutorial/cors.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is a Request Body in FastAPI?",
+        "expected_answer": "Data sent by the client in the body of a POST/PUT request, typically JSON. Define it using Pydantic models.",
+        "source_file": "tutorial/body.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I return a custom status code?",
+        "expected_answer": "Use the status_code parameter in the decorator, e.g., @app.post('/items', status_code=201) or return Response with status_code.",
+        "source_file": "tutorial/response-status-code.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is Pydantic used for in FastAPI?",
+        "expected_answer": "Data validation and serialization. Define models that validate request/response data automatically.",
+        "source_file": "tutorial/body.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I define query parameters?",
+        "expected_answer": "Add them as function parameters not in the path. FastAPI automatically treats them as query params, e.g., def read_items(skip: int = 0, limit: int = 10)",
+        "source_file": "tutorial/query-params.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is the difference between Query and Body parameters?",
+        "expected_answer": "Query parameters go in the URL (?key=value), Body parameters are sent in the request body (typically JSON).",
+        "source_file": "tutorial/query-params.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I add API documentation?",
+        "expected_answer": "FastAPI automatically generates docs at /docs (Swagger UI) and /redoc (ReDoc) based on your code.",
+        "source_file": "tutorial/first-steps.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is async def used for in FastAPI?",
+        "expected_answer": "Defines an asynchronous endpoint that can handle concurrent requests efficiently. Use for I/O-bound operations.",
+        "source_file": "async.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I validate that a field is required?",
+        "expected_answer": "Don't provide a default value in the Pydantic model. Fields without defaults are required.",
+        "source_file": "tutorial/body.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I add a description to a query parameter?",
+        "expected_answer": "Use Query() with description parameter: item_id: int = Query(..., description='The ID of the item')",
+        "source_file": "tutorial/query-params-str-validations.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is dependency injection in FastAPI?",
+        "expected_answer": "A pattern where you define reusable dependencies (auth, DB connections, etc.) using Depends() that FastAPI executes automatically.",
+        "source_file": "tutorial/dependencies/index.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I raise an HTTP exception?",
+        "expected_answer": "Use HTTPException from fastapi: raise HTTPException(status_code=404, detail='Item not found')",
+        "source_file": "tutorial/handling-errors.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is the purpose of response_model?",
+        "expected_answer": "Defines the Pydantic model for the response, enabling validation, serialization, and automatic docs generation.",
+        "source_file": "tutorial/response-model.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I read request headers?",
+        "expected_answer": "Use Header() parameter: user_agent: str = Header(None)",
+        "source_file": "tutorial/header-params.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I set response headers?",
+        "expected_answer": "Use Response object: return Response(content='...', headers={'X-Custom': 'value'})",
+        "source_file": "advanced/response-headers.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "What is the difference between def and async def endpoints?",
+        "expected_answer": "async def uses asynchronous I/O (non-blocking), def runs in a thread pool (blocking). Use async for I/O-bound work.",
+        "source_file": "async.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I upload files?",
+        "expected_answer": "Use File() and UploadFile: file: UploadFile = File(...). UploadFile provides async methods to read file content.",
+        "source_file": "tutorial/request-files.md",
+        "difficulty": "easy"
+    },
+    {
+        "question": "How do I run background tasks?",
+        "expected_answer": "Use BackgroundTasks: add background_tasks.add_task(function, *args) to execute after returning response.",
+        "source_file": "tutorial/background-tasks.md",
+        "difficulty": "easy"
+    },
+
+    # Medium - Multiple concepts (7 questions)
+    {
+        "question": "How do I combine path, query, and body parameters in one endpoint?",
+        "expected_answer": "Define all in the function signature: path params in route, query params as function args with defaults, body params as Pydantic models.",
+        "source_file": "tutorial/body-multiple-params.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "How do I validate that a string matches a regex pattern?",
+        "expected_answer": "Use Query() or Field() with regex parameter: name: str = Query(..., regex='^[a-z]+$')",
+        "source_file": "tutorial/query-params-str-validations.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "What's the difference between Form() and Body()?",
+        "expected_answer": "Form() expects application/x-www-form-urlencoded data (HTML forms), Body() expects application/json.",
+        "source_file": "tutorial/request-forms.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "How do I create nested Pydantic models?",
+        "expected_answer": "Define one model as a field type in another: class Image(BaseModel): url: str; class Item(BaseModel): image: Image",
+        "source_file": "tutorial/body-nested-models.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "How do I handle multiple response status codes?",
+        "expected_answer": "Use responses parameter in decorator with dict of status codes and models: @app.get('/items', responses={404: {'model': Error}})",
+        "source_file": "advanced/additional-responses.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "How do I implement authentication with OAuth2?",
+        "expected_answer": "Use OAuth2PasswordBearer for token dependency, create /token endpoint for login, verify tokens in dependencies.",
+        "source_file": "tutorial/security/oauth2-jwt.md",
+        "difficulty": "medium"
+    },
+    {
+        "question": "How do I organize routes in multiple files?",
+        "expected_answer": "Use APIRouter in separate files, then include them in main app with app.include_router(router, prefix='/api')",
+        "source_file": "tutorial/bigger-applications.md",
+        "difficulty": "medium"
+    },
+
+    # Hard - Complex scenarios (3 questions)
+    {
+        "question": "How do I implement custom middleware?",
+        "expected_answer": "Create async function with app, call_next params. Use @app.middleware('http') decorator or app.add_middleware(). Process request before/after calling await call_next(request).",
+        "source_file": "advanced/middleware.md",
+        "difficulty": "hard"
+    },
+    {
+        "question": "How do I handle WebSocket connections?",
+        "expected_answer": "Use @app.websocket('/ws') decorator, accept connection with await websocket.accept(), then receive/send data in loop.",
+        "source_file": "advanced/websockets.md",
+        "difficulty": "hard"
+    },
+    {
+        "question": "How do I test FastAPI endpoints with pytest?",
+        "expected_answer": "Use TestClient from fastapi.testclient, create client = TestClient(app), then use client.get/post/etc. Returns standard responses for assertions.",
+        "source_file": "tutorial/testing.md",
+        "difficulty": "hard"
+    }
+]
+
+
+def save_golden_dataset(output_path: str = "evaluation/golden_dataset.json"):
+    """Save golden dataset to JSON file"""
+
+    # Create evaluation directory if it doesn't exist
+    Path("evaluation").mkdir(exist_ok=True)
+
+    dataset = {
+        "metadata": {
+            "total_questions": len(GOLDEN_QUESTIONS),
+            "difficulty_distribution": {
+                "easy": sum(1 for q in GOLDEN_QUESTIONS if q["difficulty"] == "easy"),
+                "medium": sum(1 for q in GOLDEN_QUESTIONS if q["difficulty"] == "medium"),
+                "hard": sum(1 for q in GOLDEN_QUESTIONS if q["difficulty"] == "hard")
+            },
+            "description": "Golden dataset for FastAPI RAG system evaluation",
+            "version": "1.0"
+        },
+        "questions": GOLDEN_QUESTIONS
+    }
+
+    with open(output_path, 'w') as f:
+        json.dump(dataset, f, indent=2)
+
+    print(f"✅ Golden dataset saved to {output_path}")
+    print(f"   Total questions: {len(GOLDEN_QUESTIONS)}")
+    print(f"   Easy: {dataset['metadata']['difficulty_distribution']['easy']}")
+    print(f"   Medium: {dataset['metadata']['difficulty_distribution']['medium']}")
+    print(f"   Hard: {dataset['metadata']['difficulty_distribution']['hard']}")
+
+
+if __name__ == "__main__":
+    save_golden_dataset()
